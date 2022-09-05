@@ -2,10 +2,11 @@
 Class responsible for storing the current state of the game
 Aswell as determining valid moves based on the state, keeping a move log 
 '''
-
-#23:53
+#6.19.52
 from constants import DIM
 
+
+        
 class GameState():
 
     # Color of pieces determined with the first character : "w" = white ,"b" = black
@@ -93,6 +94,9 @@ class GameState():
         self.check_castle_rights(move)
         self.castle_rights_log.append(CastleRights(self.curr_castle_rights.white_right_castle, self.curr_castle_rights.black_right_castle, 
                                   self.curr_castle_rights.white_left_castle, self.curr_castle_rights.black_left_castle))
+        
+        
+        
     
     def undo_move(self):
     

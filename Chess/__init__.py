@@ -1,20 +1,15 @@
 import numpy as n
 import random
 
-x = [[random.randint(1,50) for i in range(0, 5)] for i in range(0, 5)]
+x = [[random.randint(1, 50) for i in range(0, 5)] for i in range(0, 5)]
 
 print(n.array(x))
-print(x[1][0])
 
 count = 0
 
-for i in range(0,30):
-    
-    if i % 2 == 0:
-            if i == 12:
-                break
-       
-    count +=1
+for i in x:
+    for j in i:
+        print(j)
+
 
 print(f"count = {count}")
-        
