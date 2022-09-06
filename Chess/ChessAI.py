@@ -3,75 +3,59 @@ import time
 from constants import CHECKMATE, STALEMATE, DEPTH
 
 values = {"P": 1, "N":3, "B": 3, "R":5, "Q": 9, "K": 0 }
-test, test2 = CHECKMATE, STALEMATE
 
 
 def random_moves(valid_moves):
     return random.choice(valid_moves)
 
 
-def min_max(game_state, valid_moves):
-    time.sleep(1.5)
-    global next_moves
-    move_min_max(game_state, valid_moves, DEPTH, game_state.white_turn )
-    return next_moves
-
-
-
-def move_min_max(game_state, valid_moves, depth, white_turn):
-    global next_moves
+def get_nega_max(game_state, valid_moves):
+    time.sleep(0.5)
+    global next_move, counter
+    next_move = None
+    counter = 0
+    print(counter)
     random.shuffle(valid_moves)
+    #move_min_max(game_state, valid_moves, DEPTH, game_state.white_turn )
+    nega_max(game_state, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if game_state.white_turn else -1 )
+    
+    return next_move
+
+
+
+
+def nega_max(game_state, valid_moves, depth, alpha, beta, turn_multiplier): #nega max with alpha beta pruning
+    global next_move,counter
+    counter += 1
     if depth == 0:
-        print(game_state.white_turn)
-
-        return board_score(game_state)
-    
-    if white_turn:
-        max_score = -CHECKMATE
+        return turn_multiplier * board_score(game_state)
         
-        for move in valid_moves:
-            
-            game_state.make_move(move)
-            next_moves = game_state.get_valid_moves()
-            total_score = move_min_max(game_state, next_moves, depth-1, False)
+    #
 
-            if total_score > max_score:
-                max_score = total_score
+    max_score = -CHECKMATE
+    for move in valid_moves:
+        game_state.make_move(move)
+        next_moves = game_state.get_valid_moves()
+        total_score = -nega_max(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
+        
+        if total_score > max_score:
+            max_score = total_score
 
-                if depth == DEPTH:
-                    next_moves = move
-            
-            game_state.undo_move()
-            print(game_state.white_turn)
+            if depth == DEPTH:
+                next_move = move
+        game_state.undo_move()
 
-            return max_score
-    
-    else:
-        min_score = CHECKMATE
-
-        for move in valid_moves:
-            game_state.make_move(move)
-            next_moves = game_state.get_valid_moves()
-            total_score = move_min_max(game_state, next_moves, depth -1, True)
-
-            if total_score < min_score:
-
-                min_score = total_score
-
-                if depth == DEPTH:
-                    next_moves = move
-            
-            game_state.undo_move()
-            print(game_state.white_turn)
-            return min_score
-    
+        if max_score > alpha:
+            alpha = max_score
+        
+        if alpha >= beta:
+            break
 
     
-
+    return max_score
 
 
 def board_score(game_state):
-   
     if game_state.check_mate:
 
         if game_state.white_turn:
@@ -86,9 +70,12 @@ def board_score(game_state):
 
     for row in game_state.board:
         for piece in row:
-            if piece[0] == "w":
+
+            if piece[0] == 'w':
                 total_score += values[piece[1]]
-            elif piece[0] == "b":
+
+            elif piece[0] == 'b':
                 total_score -= values[piece[1]]
-    
+
     return total_score
+    

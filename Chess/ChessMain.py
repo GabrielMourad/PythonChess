@@ -1,7 +1,6 @@
 # Main Driver that is responsible for user input and displaying the GameState
 # The use of pygame will allow us to display the engine
 
-from tkinter.tix import IMAGE
 import pygame
 from pygame import mixer
 from constants import DIM, WIDTH, HEIGHT, SQUARE_SIZE, FPS, COLORS
@@ -10,6 +9,7 @@ import ChessAI
 
 
 pygame.init()
+pygame.display.set_caption("Python CHESS (AI Editon)")
 
 mixer.init()
 mixer.music.load("audio/move_sound.mp3")
@@ -18,6 +18,40 @@ mixer.music.set_volume(0.7)
 IMAGES = {}
 
 # initialize the images in the dictionary
+
+
+def menu(screen):
+
+    BG = pygame.image.load("images/chessBG.png")
+    BG = pygame.transform.scale(BG, (WIDTH, HEIGHT))
+    title_font = pygame.font.SysFont("Verdana", 50)
+    caption_font = pygame.font.SysFont("Arial", 30)
+    caption_font2 = pygame.font.SysFont("Arial", 20)
+
+    title = title_font.render("CHESS", 30, (139, 121, 94), True)
+    caption1 = caption_font.render("Versus AI", 50, (16, 78, 139))
+    caption2 = caption_font2.render(
+        "Click anywhere to start!", 50, (16, 78, 139))
+
+    run = True
+    while run:
+
+        screen.blit(BG, (0, 0))
+
+        screen.blit(title, (170, 40))
+        screen.blit(caption1, (195, 130))
+        screen.blit(caption2, (175, 190))
+        pygame.display.update()
+        #caption_font = pygame.font.SysFont("Arial", 15)
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                run = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                run = False
 
 
 def load_images():
@@ -76,34 +110,6 @@ def highlight_squares(screen, game_state, valid_moves, square_selected):
                         surface.fill(pygame.Color(255, 0, 0))
                         screen.blit(surface, (move.endColumn *
                                     SQUARE_SIZE, move.endRow * SQUARE_SIZE))
-            
-
-
-def show_animation(move, screen, game_state, clock):
-
-    changing_row = move.endRow - move.startRow
-    changing_column = move.endColumn - move.startColumn
-
-    frames = 15
-
-    total_frames = (abs(changing_row) + abs(changing_column)) * frames
-
-    for frame in range(total_frames + 1):
-        row, column = ((move.startRow + changing_row * frame/total_frames,
-                        move.startColumn + changing_column * frame/total_frames))
-        draw_board(screen, game_state)
-        color = COLORS[(move.endRow + move.endColumn) % 2]
-        end_square = pygame.Rect(
-            move.endColumn * SQUARE_SIZE, move.endRow * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
-        pygame.draw.rect(screen, color, end_square)
-
-        if move.pieceCaptured != "--":
-            screen.blit(IMAGES[move.pieceCaptured], end_square)
-
-        screen.blit(IMAGES[move.pieceMoved], pygame.Rect(
-            column*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-        pygame.display.flip()
-        clock.tick(60)
 
 
 # draws squares on the board
@@ -125,17 +131,17 @@ def draw_board(screen, game_state):
             if piece != "--":
                 screen.blit(IMAGES[piece], pygame.Rect(column * SQUARE_SIZE,
                                                        row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    
+
     if len(game_state.moveLog) != 0:
-                prev_move_row, prev_move_column = game_state.moveLog[-1].startRow, game_state.moveLog[-1].startColumn
-                curr_location_row, curr_location_column = game_state.moveLog[-1].endRow, game_state.moveLog[-1].endColumn
-                surface.fill(pygame.Color(127,255,0))
-                screen.blit(surface, (prev_move_column *
-                                      SQUARE_SIZE,  prev_move_row * SQUARE_SIZE))
-                
-                surface.set_alpha(70)
-                screen.blit(surface, (curr_location_column *
-                                      SQUARE_SIZE,  curr_location_row * SQUARE_SIZE))                      
+        prev_move_row, prev_move_column = game_state.moveLog[-1].startRow, game_state.moveLog[-1].startColumn
+        curr_location_row, curr_location_column = game_state.moveLog[-1].endRow, game_state.moveLog[-1].endColumn
+        surface.fill(pygame.Color(127, 255, 0))
+        screen.blit(surface, (prev_move_column *
+                              SQUARE_SIZE,  prev_move_row * SQUARE_SIZE))
+
+        surface.set_alpha(70)
+        screen.blit(surface, (curr_location_column *
+                              SQUARE_SIZE,  curr_location_row * SQUARE_SIZE))
 
 # draws pieces on the board
 
@@ -155,6 +161,9 @@ def main():
     move_made = False
     player_one = True
     player_two = False
+
+    menu(screen)
+
     while game_on:
 
         for event in pygame.event.get():
@@ -169,8 +178,8 @@ def main():
                 if not game_over and human_turn:
                     location = pygame.mouse.get_pos()  # location of mouse
                     column = location[0] // SQUARE_SIZE
-                    row = location[1] // SQUARE_SIZE
 
+                    row = location[1] // SQUARE_SIZE
                     # checks if user clicked same square twice, will undo if so
                     if square_selected == (row, column):
                         square_selected = ()
@@ -211,7 +220,8 @@ def main():
 
             # AI
             if not game_over and not human_turn:
-                AI_move = ChessAI.min_max(game_state, valid_moves)
+
+                AI_move = ChessAI.get_nega_max(game_state, valid_moves)
 
                 if AI_move is None:
                     AI_move = ChessAI.random_moves(valid_moves)
@@ -220,11 +230,7 @@ def main():
                 draw_board(screen, game_state)
                 move_made = True
 
-            print(not game_over, not human_turn)
-
             if move_made:
-
-               
 
                 print("making valid moves....")
                 valid_moves = game_state.get_valid_moves()
