@@ -1,2 +1,2 @@
 # PythonChess
-A chess game build out of entirely Python and Pygame
+A chess engine build out of entirely Python and Pygame
